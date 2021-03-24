@@ -1,8 +1,11 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, beforeCreate } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, column, beforeCreate, belongsTo, manyToMany } from '@ioc:Adonis/Lucid/Orm'
 import { v5 as uuidv5 } from 'uuid'
 import Env from '@ioc:Adonis/Core/Env'
 import Status from 'contracts/Enums/Status'
+import User from './User'
+import Project from './Project'
+import { BelongsTo, ManyToMany } from '@ioc:Adonis/Lucid/Relations'
 
 export default class Task extends BaseModel {
   @column({ isPrimary: true })
@@ -31,6 +34,21 @@ export default class Task extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime
+
+  @belongsTo(() => User, {
+    localKey: 'createdBy'
+  })
+  public creator: BelongsTo<typeof User> 
+
+  @belongsTo(() => User, {
+    localKey: 'assignedTo'
+  })
+  public assignee: BelongsTo<typeof User> 
+
+  @manyToMany(() => Project, {
+    pivotColumns: ['sort_order']
+  })
+  public projects: ManyToMany<typeof Project>
 
   @beforeCreate()
   public static assignUuid(task: Task){
